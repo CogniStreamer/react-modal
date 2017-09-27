@@ -8,8 +8,6 @@ import SafeHTMLElement from '../helpers/safeHTMLElement';
 export const portalClassName = 'ReactModalPortal';
 export const bodyOpenClassName = 'ReactModal__Body--open';
 
-const renderSubtreeIntoContainer = ReactDOM.unstable_renderSubtreeIntoContainer;
-
 function getParentElement(parentSelector) {
   return parentSelector();
 }
@@ -96,20 +94,17 @@ export default class Modal extends Component {
     }
   };
 
-  componentDidMount() {
-    this.node = document.createElement('div');
-    this.node.className = this.props.portalClassName;
+  node = document.createElement('div');
 
+  componentDidMount() {
+    this.node.className = this.props.portalClassName;
     const parent = getParentElement(this.props.parentSelector);
     parent.appendChild(this.node);
-
-    this.renderPortal(this.props);
   }
 
   componentWillReceiveProps(newProps) {
-    const { isOpen } = newProps;
     // Stop unnecessary renders if modal is remaining closed
-    if (!this.props.isOpen && !isOpen) return;
+    if (!this.props.isOpen && !newProps.isOpen) return;
 
     const currentParent = getParentElement(this.props.parentSelector);
     const newParent = getParentElement(newProps.parentSelector);
@@ -118,8 +113,6 @@ export default class Modal extends Component {
       currentParent.removeChild(this.node);
       newParent.appendChild(this.node);
     }
-
-    this.renderPortal(newProps);
   }
 
   componentWillUpdate(newProps) {
@@ -149,18 +142,24 @@ export default class Modal extends Component {
   }
 
   removePortal = () => {
-    ReactDOM.unmountComponentAtNode(this.node);
     const parent = getParentElement(this.props.parentSelector);
     parent.removeChild(this.node);
   }
 
-  renderPortal = props => {
-    this.portal = renderSubtreeIntoContainer(this, (
-      <ModalPortal defaultStyles={Modal.defaultStyles} {...props} />
-    ), this.node);
+  getPortalRef = (portal) => {
+    this.portal = portal;
   }
 
   render() {
-    return null;
+    if (!this.props.isOpen) return null;
+
+    return ReactDOM.createPortal(
+      <ModalPortal
+        defaultStyles={Modal.defaultStyles}
+        {...this.props}
+        ref={this.getPortalRef}
+      />,
+      this.node
+    );
   }
 }
