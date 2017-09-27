@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+var path = require('path');
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
 var reactExternal = {
@@ -29,7 +30,7 @@ module.exports = {
   output: {
     filename: '[name].js',
     chunkFilename: '[id].chunk.js',
-    path: 'dist',
+    path: path.resolve('./dist'),
     publicPath: '/',
     libraryTarget: 'umd',
     library: 'ReactModal'
@@ -50,7 +51,7 @@ module.exports = {
 
   module: {
     loaders: [
-      { test: /\.js?$/, exclude: /node_modules/, loader: 'babel'}
+      { test: /\.js?$/, exclude: /node_modules/, loader: 'babel-loader'}
     ]
   }
 
